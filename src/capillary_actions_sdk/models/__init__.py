@@ -1,12 +1,12 @@
 # Track 1 — Student Model models
 # Track 2 — Learning Actions models
-from primer_sdk.models.learner_interaction import (
+from capillary_actions_sdk.models.learner_interaction import (
     KnowledgeConcept,
     KnowledgeGraph,
     LearnerProgress,
     TeachingContext,
 )
-from primer_sdk.models.learning_actions import (
+from capillary_actions_sdk.models.learning_actions import (
     AgentLoopDefinition,
     Engagement,
     ExitCondition,
@@ -27,13 +27,13 @@ from primer_sdk.models.learning_actions import (
 )
 
 # Track 3 — Presentation models
-from primer_sdk.models.presentation import (
+from capillary_actions_sdk.models.presentation import (
     ChannelFile,
     ChannelMessage,
     ChannelSession,
     HitlGateConfig,
 )
-from primer_sdk.models.student_model import (
+from capillary_actions_sdk.models.student_model import (
     Cohort,
     CohortSnapshot,
     IngestResult,

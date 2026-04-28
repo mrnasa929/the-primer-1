@@ -3,14 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "primer-sdk"
-version = "0.1.0"
-description = "SDK for building extensions to the Primer platform"
+name = "capillary-actions-sdk"
+version = "0.2.0"
+description = "SDK for building extensions to the Capillary Actions platform"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.13,<4.0"
 authors = [
-    { name = "Primer SDK Contributors" },
+    { name = "Capillary Actions SDK Contributors" },
 ]
 keywords = ["sdk", "ai", "agents", "workflows", "ag-ui"]
 classifiers = [
@@ -25,14 +25,14 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/primer-sdk/primer-sdk"
-Repository = "https://github.com/primer-sdk/primer-sdk"
+Homepage = "https://bitbucket.org/allogy/capillary-actions-sdk"
+Repository = "https://bitbucket.org/allogy/capillary-actions-sdk"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/primer_sdk"]
+packages = ["src/capillary_actions_sdk"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/primer_sdk"]
+include = ["src/capillary_actions_sdk"]
 
 [tool.ruff]
 line-length = 100

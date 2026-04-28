@@ -4,14 +4,14 @@ from uuid import uuid4
 
 import pytest
 
-from primer_sdk.events import (
+from capillary_actions_sdk.events import (
     TextMessageContentEvent,
     TextMessageEndEvent,
     TextMessageStartEvent,
 )
-from primer_sdk.models.presentation import ChannelSession
-from primer_sdk.ports.presentation import ChannelAdapterPort
-from primer_sdk.reference.slack_adapter import SlackChannelAdapter
+from capillary_actions_sdk.models.presentation import ChannelSession
+from capillary_actions_sdk.ports.presentation import ChannelAdapterPort
+from capillary_actions_sdk.reference.slack_adapter import SlackChannelAdapter
 
 # ---------------------------------------------------------------------------
 # Helpers

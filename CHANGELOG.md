@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-04-28
+
+### Changed
+
+- **BREAKING:** Renamed package from `primer-sdk` to `capillary-actions-sdk`
+- Python module renamed from `primer_sdk` to `capillary_actions_sdk`
+- All imports must be updated: `from capillary_actions_sdk.* import ...`
+
 ## [0.1.0] - 2026-04-28
 
 ### Added

@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 from uuid import UUID
 
-from primer_sdk.models.learner_interaction import (
+from capillary_actions_sdk.models.learner_interaction import (
     KnowledgeConcept,
     KnowledgeGraph,
     LearnerProgress,
@@ -33,7 +33,7 @@ class KnowledgeGraphPort(ABC):
             graph_id: UUID of the graph to retrieve.
 
         Returns:
-            The :class:`~primer_sdk.models.learner_interaction.KnowledgeGraph`.
+            The :class:`~capillary_actions_sdk.models.learner_interaction.KnowledgeGraph`.
         """
         ...
 
@@ -45,7 +45,7 @@ class KnowledgeGraphPort(ABC):
             concept_id: Slug identifier of the concept.
 
         Returns:
-            The :class:`~primer_sdk.models.learner_interaction.KnowledgeConcept`.
+            The :class:`~capillary_actions_sdk.models.learner_interaction.KnowledgeConcept`.
         """
         ...
 
@@ -58,7 +58,7 @@ class KnowledgeGraphPort(ABC):
 
         Returns:
             List of prerequisite
-            :class:`~primer_sdk.models.learner_interaction.KnowledgeConcept` instances.
+            :class:`~capillary_actions_sdk.models.learner_interaction.KnowledgeConcept` instances.
         """
         ...
 
@@ -74,7 +74,7 @@ class KnowledgeGraphPort(ABC):
 
         Returns:
             List of matching
-            :class:`~primer_sdk.models.learner_interaction.KnowledgeConcept` instances.
+            :class:`~capillary_actions_sdk.models.learner_interaction.KnowledgeConcept` instances.
         """
         ...
 
@@ -94,7 +94,7 @@ class LearnerProgressPort(ABC):
             graph_id: UUID of the Knowledge Graph.
 
         Returns:
-            :class:`~primer_sdk.models.learner_interaction.LearnerProgress` for this
+            :class:`~capillary_actions_sdk.models.learner_interaction.LearnerProgress` for this
             learner/graph pair.
         """
         ...
@@ -120,7 +120,7 @@ class LearnerProgressPort(ABC):
 
         Returns:
             The next recommended
-            :class:`~primer_sdk.models.learner_interaction.KnowledgeConcept`,
+            :class:`~capillary_actions_sdk.models.learner_interaction.KnowledgeConcept`,
             or ``None`` if all concepts are mastered.
         """
         ...
@@ -145,7 +145,7 @@ class TeachingPort(ABC):
             concept_id: Slug identifier of the concept to teach.
 
         Returns:
-            :class:`~primer_sdk.models.learner_interaction.TeachingContext` ready
+            :class:`~capillary_actions_sdk.models.learner_interaction.TeachingContext` ready
             for use in a teaching interaction.
         """
         ...

@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from primer_sdk.ports.platform import (
+from capillary_actions_sdk.ports.platform import (
     EventStreamPort,
     ResumeWorkflowPort,
     ResumeWorkflowRequest,
