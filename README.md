@@ -60,7 +60,7 @@ All communication between the platform and external adapters flows through the A
 
 ```bash
 # Clone and install in development mode
-git clone git@bitbucket.org:allogy/capillary-actions-sdk.git
+git clone https://github.com/Allogy/capillary-actions-sdk.git
 cd capillary-actions-sdk
 uv venv && uv sync --all-groups
 ```
@@ -68,7 +68,7 @@ uv venv && uv sync --all-groups
 Or install directly:
 
 ```bash
-uv pip install git+ssh://git@bitbucket.org/allogy/capillary-actions-sdk.git
+uv pip install git+https://github.com/Allogy/capillary-actions-sdk.git
 ```
 
 ### 2. Verify installation
@@ -296,7 +296,7 @@ Reference implementation: `capillary_actions_sdk.reference.slack_adapter.SlackCh
 ### Setup
 
 ```bash
-git clone git@bitbucket.org:allogy/capillary-actions-sdk.git
+git clone https://github.com/Allogy/capillary-actions-sdk.git
 cd capillary-actions-sdk
 uv venv && uv sync --all-groups
 uv run pytest tests/ -v          # verify baseline

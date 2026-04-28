@@ -25,8 +25,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://bitbucket.org/allogy/capillary-actions-sdk"
-Repository = "https://bitbucket.org/allogy/capillary-actions-sdk"
+Homepage = "https://github.com/Allogy/capillary-actions-sdk"
+Repository = "https://github.com/Allogy/capillary-actions-sdk"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/capillary_actions_sdk"]
