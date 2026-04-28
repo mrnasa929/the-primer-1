@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from typing import Any
 from uuid import UUID
 
@@ -210,7 +210,7 @@ class TriggerSchedulerPort(ABC):
         ...
 
     @abstractmethod
-    async def register_webhook_handler(self, path: str, callback: Any) -> None:
+    async def register_webhook_handler(self, path: str, callback: Callable[..., Any]) -> None:
         """Register a callback for an inbound webhook path.
 
         Args:

@@ -23,7 +23,7 @@ class SlackChannelAdapter(ChannelAdapterPort):
     """Reference implementation of :class:`ChannelAdapterPort` for Slack.
 
     Uses an in-memory outbox (list of dicts) instead of real Slack API calls,
-    making it suitable for testing and development and testing.
+    making it suitable for testing and development.
     """
 
     def __init__(self, bot_token: str, signing_secret: str) -> None:

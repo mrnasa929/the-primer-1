@@ -43,15 +43,9 @@ class AGUIEvent(BaseModel):
 class RunStartedEvent(AGUIEvent):
     event_type: AGUIEventType = AGUIEventType.RUN_STARTED
 
-    def to_dict(self) -> dict[str, Any]:
-        return super().to_dict()
-
 
 class RunFinishedEvent(AGUIEvent):
     event_type: AGUIEventType = AGUIEventType.RUN_FINISHED
-
-    def to_dict(self) -> dict[str, Any]:
-        return super().to_dict()
 
 
 class RunErrorEvent(AGUIEvent):
