@@ -7,6 +7,7 @@ import pytest
 
 from primer_sdk.models.learning_actions import (
     AgentLoopDefinition,
+    Engagement,
     ExitCondition,
     # Layer 3 — Agent Loops
     GoalEvaluator,
@@ -611,3 +612,91 @@ class TestLoopIteration:
         assert iteration.goal_met is True
         assert iteration.tokens_used == 1500
         assert iteration.goal_score == pytest.approx(0.9)
+
+
+# ---------------------------------------------------------------------------
+# Engagement
+# ---------------------------------------------------------------------------
+
+
+class TestEngagement:
+    def test_creation_with_required_fields(self):
+        engagement = Engagement(
+            id=uuid4(),
+            name="Algebra Practice",
+            description="Interactive tutoring session on linear equations",
+            engagement_type="tutoring",
+            source="generated",
+        )
+        assert isinstance(engagement.id, UUID)
+        assert engagement.name == "Algebra Practice"
+        assert engagement.description == "Interactive tutoring session on linear equations"
+        assert engagement.engagement_type == "tutoring"
+        assert engagement.source == "generated"
+
+    def test_default_values(self):
+        before = datetime.now(timezone.utc)
+        engagement = Engagement(
+            id=uuid4(),
+            name="Review Quiz",
+            description="Quick review of recent topics",
+            engagement_type="review",
+            source="curated",
+        )
+        after = datetime.now(timezone.utc)
+        assert engagement.knowledge_graph_refs == []
+        assert engagement.student_model_context == {}
+        assert engagement.workflow_definition is None
+        assert before <= engagement.created_at <= after
+        assert engagement.metadata == {}
+
+    def test_explicit_optional_fields(self):
+        ts = datetime(2026, 3, 15, 10, 0, 0, tzinfo=timezone.utc)
+        engagement = Engagement(
+            id=uuid4(),
+            name="Assessment",
+            description="End-of-unit assessment",
+            engagement_type="assessment",
+            source="curated",
+            knowledge_graph_refs=["concept-algebra-101", "concept-equations-201"],
+            student_model_context={"mastery_level": 0.6, "preferred_style": "visual"},
+            workflow_definition={"steps": [{"type": "prompt", "template": "solve"}]},
+            created_at=ts,
+            metadata={"difficulty": "medium", "estimated_minutes": 15},
+        )
+        assert engagement.knowledge_graph_refs == ["concept-algebra-101", "concept-equations-201"]
+        assert engagement.student_model_context["mastery_level"] == 0.6
+        expected_wdf = {"steps": [{"type": "prompt", "template": "solve"}]}
+        assert engagement.workflow_definition == expected_wdf
+        assert engagement.created_at == ts
+        assert engagement.metadata == {"difficulty": "medium", "estimated_minutes": 15}
+
+    def test_mutable_knowledge_graph_refs_independent(self):
+        e1 = Engagement(
+            id=uuid4(), name="A", description="A", engagement_type="exercise", source="generated"
+        )
+        e2 = Engagement(
+            id=uuid4(), name="B", description="B", engagement_type="exercise", source="generated"
+        )
+        e1.knowledge_graph_refs.append("concept-1")
+        assert e2.knowledge_graph_refs == []
+
+    def test_mutable_student_model_context_independent(self):
+        e1 = Engagement(
+            id=uuid4(), name="A", description="A", engagement_type="reflection", source="generated"
+        )
+        e2 = Engagement(
+            id=uuid4(), name="B", description="B", engagement_type="reflection", source="generated"
+        )
+        e1.student_model_context["key"] = "val"
+        assert e2.student_model_context == {}
+
+    def test_mutable_metadata_independent(self):
+        e1 = Engagement(
+            id=uuid4(), name="A", description="A", engagement_type="tutoring", source="curated"
+        )
+        e2 = Engagement(
+            id=uuid4(), name="B", description="B", engagement_type="tutoring", source="curated"
+        )
+        e1.metadata["tag"] = "important"
+        assert e2.metadata == {}

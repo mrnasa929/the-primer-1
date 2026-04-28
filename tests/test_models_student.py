@@ -8,7 +8,9 @@ from primer_sdk.models.student_model import (
     CohortSnapshot,
     IngestResult,
     MembershipEvent,
+    MemoryEntry,
     PreferenceSignal,
+    WorkingMemoryAssembly,
 )
 
 
@@ -263,3 +265,120 @@ class TestIngestResult:
     def test_errors_default_empty(self):
         result = IngestResult(processed=1, skipped=0, failed=0)
         assert result.errors == []
+
+
+class TestMemoryEntry:
+    def test_creation_with_required_fields(self):
+        entry = MemoryEntry(
+            id=uuid4(),
+            tier="working",
+            dimension="history",
+            content={"topic": "algebra", "score": 0.85},
+        )
+        assert isinstance(entry.id, UUID)
+        assert entry.tier == "working"
+        assert entry.dimension == "history"
+        assert entry.content == {"topic": "algebra", "score": 0.85}
+
+    def test_default_values(self):
+        before = datetime.now(timezone.utc)
+        entry = MemoryEntry(
+            id=uuid4(),
+            tier="long_term",
+            dimension="affinities",
+            content={"preference": "visual"},
+        )
+        after = datetime.now(timezone.utc)
+        assert entry.relevance_score == 1.0
+        assert before <= entry.created_at <= after
+        assert entry.expires_at is None
+        assert entry.metadata == {}
+
+    def test_explicit_optional_fields(self):
+        expires = datetime(2026, 12, 31, tzinfo=timezone.utc)
+        entry = MemoryEntry(
+            id=uuid4(),
+            tier="short_term",
+            dimension="regula",
+            content={"strategy": "spaced-repetition"},
+            relevance_score=0.72,
+            expires_at=expires,
+            metadata={"source": "quiz-engine"},
+        )
+        assert entry.relevance_score == 0.72
+        assert entry.expires_at == expires
+        assert entry.metadata == {"source": "quiz-engine"}
+
+    def test_mutable_metadata_independent(self):
+        entry_a = MemoryEntry(
+            id=uuid4(), tier="working", dimension="history", content={}
+        )
+        entry_b = MemoryEntry(
+            id=uuid4(), tier="working", dimension="history", content={}
+        )
+        entry_a.metadata["key"] = "value"
+        assert entry_b.metadata == {}
+
+
+class TestWorkingMemoryAssembly:
+    def _make_entry(self, **overrides):
+        defaults = dict(
+            id=uuid4(),
+            tier="working",
+            dimension="history",
+            content={"fact": "example"},
+        )
+        defaults.update(overrides)
+        return MemoryEntry(**defaults)
+
+    def test_creation_with_required_fields(self):
+        entry = self._make_entry()
+        assembly = WorkingMemoryAssembly(
+            learner_id=uuid4(),
+            entries=[entry],
+        )
+        assert isinstance(assembly.learner_id, UUID)
+        assert len(assembly.entries) == 1
+        assert assembly.entries[0].tier == "working"
+
+    def test_default_values(self):
+        before = datetime.now(timezone.utc)
+        assembly = WorkingMemoryAssembly(
+            learner_id=uuid4(),
+            entries=[],
+        )
+        after = datetime.now(timezone.utc)
+        assert before <= assembly.assembled_at <= after
+        assert assembly.context_summary is None
+
+    def test_explicit_optional_fields(self):
+        ts = datetime(2026, 6, 15, 12, 0, 0, tzinfo=timezone.utc)
+        assembly = WorkingMemoryAssembly(
+            learner_id=uuid4(),
+            entries=[],
+            assembled_at=ts,
+            context_summary="Learner prefers visual content and struggles with algebra.",
+        )
+        assert assembly.assembled_at == ts
+        expected_summary = "Learner prefers visual content and struggles with algebra."
+        assert assembly.context_summary == expected_summary
+
+    def test_multiple_entries(self):
+        entries = [
+            self._make_entry(dimension="history"),
+            self._make_entry(dimension="affinities"),
+            self._make_entry(dimension="aspirations"),
+        ]
+        assembly = WorkingMemoryAssembly(
+            learner_id=uuid4(),
+            entries=entries,
+        )
+        assert len(assembly.entries) == 3
+        dims = [e.dimension for e in assembly.entries]
+        assert dims == ["history", "affinities", "aspirations"]
+
+    def test_mutable_entries_independent(self):
+        assembly_a = WorkingMemoryAssembly(learner_id=uuid4(), entries=[])
+        assembly_b = WorkingMemoryAssembly(learner_id=uuid4(), entries=[])
+        assembly_a.entries.append(self._make_entry())
+        assert len(assembly_b.entries) == 0
