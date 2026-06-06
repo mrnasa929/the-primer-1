@@ -8,10 +8,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-
-def _utcnow() -> datetime:
-    return datetime.now(tz=timezone.utc)
-
+from capillary_actions_sdk.utils import _utcnow
 
 # ---------------------------------------------------------------------------
 # Layer 1 — Triggers

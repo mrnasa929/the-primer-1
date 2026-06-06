@@ -1,8 +1,17 @@
+import math
 from typing import Any, Callable, Dict
 from uuid import UUID, uuid4
 
-from capillary_actions_sdk.models.enums import BloomLevel
-from capillary_actions_sdk.models.learner_interaction import AssessmentResult, KnowledgeConcept, RubricScore
+from capillary_actions_sdk.models.enums import AssessmentModality, BloomLevel, GateDecision
+from capillary_actions_sdk.models.learner_interaction import (
+    AssessmentResult,
+    KnowledgeConcept,
+    KnowledgeGraph,
+    LearnerProgress,
+    MasteryGateDecision,
+    RubricScore,
+)
+from capillary_actions_sdk.utils import _utcnow
 
 
 class TutoringAgent:
@@ -34,11 +43,11 @@ Teaching rule: {bloom}
 Misconceptions:
 - {chr(10).join(c.misconceptions)}
 """
-        
+
         return self.chat(system, [
             {"role": "user", "content": f"Teach me {c.name}"}
         ])
-    
+
     def probe(self, teaching: str):
         c = self.concept
         probe_rule = self.bloom_policy[c.bloom_level.value]["probe"]
@@ -53,12 +62,12 @@ Modality: {modality}
 
 Must test: {chr(10).join(c.mastery_criteria)}
 """
-        
+
         return self.chat(system, [
             {"role": "assistant", "content": teaching},
             {"role": "user", "content": "Test me"}
         ])
-    
+
     def score(self, teaching: str, probe: str, student_response: str) -> AssessmentResult:
         c = self.concept
 
@@ -89,10 +98,11 @@ Schema:
   "bloom_level_demonstrated": "<one of: remember|understand|apply|analyze|evaluate|create>",
   "overall_rationale": "<two sentences: what the student showed and what is missing>"
 }}
- 
-Be strict. A student who recites a memorised definition has demonstrated 'remember', not 'understand'.
+
+Be strict.
+A student who recites a memorised definition has demonstrated 'remember', not 'understand'.
 A student who applies a procedure correctly to a novel case has demonstrated 'apply'."""
-        
+
         messages = [
             {"role": "assistant", "content": teaching},
             {"role": "user",      "content": probe},
@@ -134,3 +144,98 @@ A student who applies a procedure correctly to a novel case has demonstrated 'ap
             agent_rationale=raw.get("overall_rationale"),
         )
 
+
+class MasteryGate:
+    """Decides pass / retry / escalate from an AssessmentResult."""
+
+    def __init__(self, kg: KnowledgeGraph, progress: LearnerProgress) -> None:
+        self.kg = kg
+        self.progress = progress
+
+    def decide(self, result: AssessmentResult) -> MasteryGateDecision:
+        concept = self.kg.get(result.concept_id)
+        if concept is None:
+            raise ValueError(f"Concept '{result.concept_id}' not found in KG")
+
+        record = self.progress.record_for(result.concept_id)
+
+        record.attempts += 1
+        record.score = result.score
+        record.last_assessed = _utcnow()
+        record.last_bloom_level_reached = result.bloom_level_demonstrated
+
+        self.progress.mastery[result.concept_id] = result.score
+
+        if result.passed:
+            record.passed = True
+            self.progress.completed_concepts.append(result.concept_id)
+
+            mastered = self.progress.mastered_ids()
+            unlocked = self.kg.unlocked_by(mastered)
+            next_id = unlocked[0].id if unlocked else None
+
+            return MasteryGateDecision(
+                assessment_result_id=result.id,
+                concept_id=result.concept_id,
+                decision=GateDecision.pass_,
+                next_concept_id=next_id,
+                rationale=(
+                    f"Score {result.score:.2f} ≥ threshold {concept.passing_threshold:.2f}. "
+                    f"Bloom level: {result.bloom_level_demonstrated.value}. "
+                    "Concept mastered."
+                ),
+            )
+
+        if record.attempts >= concept.max_attempts:
+            new_modality = (
+                AssessmentModality.application
+                if concept.assessment_modality != AssessmentModality.application
+                else AssessmentModality.explanation
+            )
+
+            return MasteryGateDecision(
+                assessment_result_id=result.id,
+                concept_id=result.concept_id,
+                decision=GateDecision.escalate,
+                retry_modality=new_modality,
+                escalation_reason=(
+                    f"Failed {record.attempts} attempts. "
+                    f"Switching from '{concept.assessment_modality.value}' "
+                    f"tp '{new_modality.value}'."
+                ),
+                rationale=(
+                    f"Score {result.score:.2f} < threshold {concept.passing_threshold:.2f} "
+                    f"after {record.attempts} attempts."
+                ),
+            )
+
+        delay = max(
+            1,
+            math.ceil(concept.decay_halflife_days * (1 - result.score))
+        )
+
+        bloom_gap = (
+            concept.bloom_level.depth()
+            - result.bloom_level_demonstrated.depth()
+        )
+
+        bloom_note = ""
+        if bloom_gap > 0:
+            bloom_note = (
+                f" Bloom gap: target '{concept.bloom_level.value}' "
+                f"vs demonstrated '{result.bloom_level_demonstrated.value}' "
+                f"({bloom_gap} level(s) below)."
+            )
+
+        return MasteryGateDecision(
+            assessment_result_id=result.id,
+            concept_id=result.concept_id,
+            decision=GateDecision.retry,
+            retry_delay_days=delay,
+            rationale=(
+                f"Score {result.score:.2f} < threshold {concept.passing_threshold:.2f}. "
+                f"Attempt {record.attempts}/{concept.max_attempts}. "
+                f"Retry in {delay} day(s)."
+                f"{bloom_note}"
+            ),
+        )
