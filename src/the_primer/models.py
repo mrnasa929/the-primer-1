@@ -1,27 +1,33 @@
-"""Learner Interaction models — Knowledge Graph, Learner Progress, and Teaching Context."""
+"""the-primer domain models — pedagogy extensions built ON the capillary-actions-sdk.
+
+The base contracts (``KnowledgeConcept``, ``KnowledgeGraph``, ``LearnerProgress``)
+come from ``capillary_actions_sdk``. the-primer *subclasses* them to add the
+competency-measurement fields and behaviour this tutoring engine needs, and adds
+its own assessment/mastery models on top. The SDK never imports from here.
+"""
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any
+from datetime import datetime
 from uuid import UUID
 
+from capillary_actions_sdk.models.learner_interaction import (
+    KnowledgeConcept as SDKKnowledgeConcept,
+)
+from capillary_actions_sdk.models.learner_interaction import (
+    KnowledgeGraph as SDKKnowledgeGraph,
+)
+from capillary_actions_sdk.models.learner_interaction import (
+    LearnerProgress as SDKLearnerProgress,
+)
 from pydantic import BaseModel, Field
 
-from capillary_actions_sdk.models.enums import AssessmentModality, BloomLevel, GateDecision
-from capillary_actions_sdk.utils import _utcnow
+from the_primer.enums import AssessmentModality, BloomLevel, GateDecision
+from the_primer.utils import _utcnow
 
 
-class KnowledgeConcept(BaseModel):
-    """A node in the Knowledge Graph representing a teachable concept."""
-
-    id: str  # slug identifier
-    name: str
-    description: str
-    prerequisites: list[str] = Field(default_factory=list)  # IDs of prerequisite concepts
-    difficulty: int = 1  # 1-5 scale
-    tags: list[str] = Field(default_factory=list)
-    metadata: dict[str, Any] = Field(default_factory=dict)
+class KnowledgeConcept(SDKKnowledgeConcept):
+    """SDK concept extended with pedagogy + mastery metadata."""
 
     bloom_level: BloomLevel = BloomLevel.understand
     assessment_modality: AssessmentModality = AssessmentModality.explanation
@@ -33,15 +39,10 @@ class KnowledgeConcept(BaseModel):
     estimated_minutes: int = 20
 
 
-class KnowledgeGraph(BaseModel):
-    """A structured representation of a course or curriculum."""
+class KnowledgeGraph(SDKKnowledgeGraph):
+    """SDK knowledge graph narrowed to the-primer concepts, with traversal helpers."""
 
-    id: UUID
-    name: str
-    description: str
-    source: str  # e.g., 'MIT OCW', 'NGSS', 'XRP'
     concepts: list[KnowledgeConcept]
-    metadata: dict[str, Any] = Field(default_factory=dict)
 
     def get(self, concept_id: str) -> KnowledgeConcept | None:
         return next((c for c in self.concepts if c.id == concept_id), None)
@@ -62,14 +63,15 @@ class KnowledgeGraph(BaseModel):
                 result.append(concept)
         return result
 
+
 class ConceptMasteryRecord(BaseModel):
     """Per-concept mastery state for a single learner."""
 
     concept_id: str
-    score: float = 0.0                               # current competency estimate
+    score: float = 0.0  # current competency estimate
     attempts: int = 0
     last_assessed: datetime | None = None
-    decay_factor: float = 1.0                        # 1.0 = no decay yet
+    decay_factor: float = 1.0  # 1.0 = no decay yet
     last_bloom_level_reached: BloomLevel | None = None
     passed: bool = False
 
@@ -77,27 +79,18 @@ class ConceptMasteryRecord(BaseModel):
         """Score adjusted for forgetting-curve decay."""
         return self.score * self.decay_factor
 
-class LearnerProgress(BaseModel):
-    """Tracks a learner's progress through a Knowledge Graph."""
 
-    learner_id: UUID
-    knowledge_graph_id: UUID
-    mastery: dict[str, float] = Field(default_factory=dict)  # concept_id -> mastery score (0-1)
-    current_concept: str | None = None
-    completed_concepts: list[str] = Field(default_factory=list)
-    last_active: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+class LearnerProgress(SDKLearnerProgress):
+    """SDK learner progress extended with per-concept mastery records."""
 
     concept_records: dict[str, ConceptMasteryRecord] = Field(default_factory=dict)
     streak_days: int = 0
     preferred_modality: AssessmentModality | None = None
-    calibration_confidence: float = 0.5              # how much we trust our own estimates
+    calibration_confidence: float = 0.5  # how much we trust our own estimates
 
     def mastered_ids(self, threshold: float | None = None) -> set[str]:
         """IDs of concepts whose effective score meets or exceeds their threshold."""
-        return {
-            cid for cid, rec in self.concept_records.items()
-            if rec.passed
-        }
+        return {cid for cid, rec in self.concept_records.items() if rec.passed}
 
     def record_for(self, concept_id: str) -> ConceptMasteryRecord:
         if concept_id not in self.concept_records:
@@ -105,22 +98,9 @@ class LearnerProgress(BaseModel):
         return self.concept_records[concept_id]
 
 
-class TeachingContext(BaseModel):
-    """Assembled context for a teaching interaction — combines KG + Student Model."""
-
-    learner_progress: LearnerProgress
-    target_concept: KnowledgeConcept
-    student_working_memory: dict[str, Any] = Field(default_factory=dict)
-    recommended_approach: str | None = None  # e.g., 'visual', 'worked_example', 'socratic'
-
-# ---------------------------------------------------------------------------
-# AssessmentResult  (new model — output of a single assessment cycle)
-# ---------------------------------------------------------------------------
-
-
 class RubricScore(BaseModel):
     criterion: str
-    score: float                                     # 0.0–1.0
+    score: float  # 0.0–1.0
     rationale: str | None = None
 
 
@@ -140,14 +120,9 @@ class AssessmentResult(BaseModel):
     # what was observed
     bloom_level_demonstrated: BloomLevel
     rubric_scores: list[RubricScore] = Field(default_factory=list)
-    score: float                                     # weighted average of rubric_scores
+    score: float  # weighted average of rubric_scores
     passed: bool
-    agent_rationale: str | None = None              # why the agent decided pass/fail
-
-
-# ---------------------------------------------------------------------------
-# MasteryGateDecision  (new model — the AI progression gate)
-# ---------------------------------------------------------------------------
+    agent_rationale: str | None = None  # why the agent decided pass/fail
 
 
 class MasteryGateDecision(BaseModel):
@@ -168,4 +143,4 @@ class MasteryGateDecision(BaseModel):
     # populated on escalate
     escalation_reason: str | None = None
 
-    rationale: str                                   # always required — agent must explain
+    rationale: str  # always required — agent must explain

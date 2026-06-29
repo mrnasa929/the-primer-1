@@ -1,13 +1,11 @@
 import json
-import math
 import os
-from uuid import uuid4
 
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from capillary_actions_sdk.tutor import TutoringAgent
-from capillary_actions_sdk.yaml_loader import load_bloom_policy, load_kg, load_modality_policy
+from the_primer.loader import load_bloom_policy, load_kg, load_modality_policy
+from the_primer.tutor import TutoringAgent
 
 load_dotenv()
 
@@ -15,10 +13,7 @@ load_dotenv()
 # Client — swap model string here if you want a different one
 # ---------------------------------------------------------------------------
 
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY")
-)
+client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=os.getenv("OPENROUTER_API_KEY"))
 
 MODEL = "openai/gpt-4o"
 
@@ -26,14 +21,16 @@ MODEL = "openai/gpt-4o"
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _chat(system: str, messages: list[dict]) -> str:
     """Send a chat request and return the assistant's reply as a string."""
     response = client.chat.completions.create(
         model=MODEL,
         messages=[{"role": "system", "content": system}, *messages],
-        temperature=0.3,        # low temperature — we want consistent scoring
+        temperature=0.3,  # low temperature — we want consistent scoring
     )
     return response.choices[0].message.content.strip()
+
 
 def _chat_json(system: str, messages: list[dict]) -> dict:
     """Same as _chat but parses the response as JSON.
@@ -43,6 +40,7 @@ def _chat_json(system: str, messages: list[dict]) -> dict:
     # Strip accidental markdown fences the model sometimes adds
     clean = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
     return json.loads(clean)
+
 
 kg = load_kg("examples/kg/abstract_algebra.yaml")
 bloom = load_bloom_policy("examples/policies/bloom.yaml")
@@ -55,7 +53,7 @@ agent = TutoringAgent(
     bloom_policy=bloom,
     modality_policy=modality,
     chat_fn=_chat,
-    chat_json_fn=_chat_json
+    chat_json_fn=_chat_json,
 )
 
 teaching = agent.teach()

@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from capillary_actions_sdk.models.enums import AssessmentModality, BloomLevel
-from capillary_actions_sdk.models.learner_interaction import KnowledgeConcept, KnowledgeGraph
+from the_primer.enums import AssessmentModality, BloomLevel
+from the_primer.models import KnowledgeConcept, KnowledgeGraph
 
 ABSTRACT_ALGEBRA_KG = KnowledgeGraph(
     id=UUID("00000000-0000-0000-0000-000000000001"),
@@ -17,9 +17,7 @@ ABSTRACT_ALGEBRA_KG = KnowledgeGraph(
     description="Core group theory concepts from set-theoretic prerequisites to quotient groups.",
     source="hand-authored",
     concepts=[
-
         # ── Tier 0: prerequisites ─────────────────────────────────────────
-
         KnowledgeConcept(
             id="set-theory",
             name="Set Theory Basics",
@@ -46,7 +44,6 @@ ABSTRACT_ALGEBRA_KG = KnowledgeGraph(
             max_attempts=3,
             estimated_minutes=15,
         ),
-
         KnowledgeConcept(
             id="binary-operations",
             name="Binary Operations",
@@ -73,9 +70,7 @@ ABSTRACT_ALGEBRA_KG = KnowledgeGraph(
             max_attempts=3,
             estimated_minutes=20,
         ),
-
         # ── Tier 1: core structure ────────────────────────────────────────
-
         KnowledgeConcept(
             id="group",
             name="Group",
@@ -105,9 +100,7 @@ ABSTRACT_ALGEBRA_KG = KnowledgeGraph(
             max_attempts=3,
             estimated_minutes=30,
         ),
-
         # ── Tier 2: derived structures ────────────────────────────────────
-
         KnowledgeConcept(
             id="subgroup",
             name="Subgroup",
@@ -134,7 +127,6 @@ ABSTRACT_ALGEBRA_KG = KnowledgeGraph(
             max_attempts=3,
             estimated_minutes=25,
         ),
-
         KnowledgeConcept(
             id="cosets",
             name="Cosets",
@@ -161,7 +153,6 @@ ABSTRACT_ALGEBRA_KG = KnowledgeGraph(
             max_attempts=3,
             estimated_minutes=30,
         ),
-
         KnowledgeConcept(
             id="homomorphism",
             name="Group Homomorphism",
