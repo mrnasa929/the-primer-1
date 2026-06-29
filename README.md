@@ -144,13 +144,27 @@ A single session works as follows.
 
 ## Demo
 
-You can run
+The demo (`main.py`) drives a full teach → probe → score cycle against an
+OpenAI-compatible endpoint (OpenRouter by default), so it needs an API key. It
+pulls in the `openai` and `python-dotenv` runtime dependencies (declared in
+`pyproject.toml`).
 
-```bash
-uv run main.py
-```
+1. Provide your key — either export it or put it in a `.env` file at the repo root:
 
-to see a demo of these in practice.
+   ```bash
+   export OPENROUTER_API_KEY="sk-or-..."
+   # or: echo 'OPENROUTER_API_KEY=sk-or-...' > .env
+   ```
+
+2. Install dependencies and run:
+
+   ```bash
+   uv sync
+   uv run main.py
+   ```
+
+Without `OPENROUTER_API_KEY` set, the demo will fail when it calls the model.
+To use a different provider/model, edit the `base_url` and `MODEL` in `main.py`.
 
 ## License
 
