@@ -1,6 +1,6 @@
 from typing import Any
 
-from capillary_actions_sdk.models.enums import GateDecision
+from the_primer.enums import GateDecision
 
 
 class SessionRunner:
@@ -19,7 +19,7 @@ class SessionRunner:
         if not concept:
             raise ValueError(f"Concept '{concept_id}' not found")
 
-        print ("\n" + "=" * 60)
+        print("\n" + "=" * 60)
         print(f"CONCEPT: {concept.name}")
         print(f"BLOOM: {concept.bloom_level.value}")
         print(f"MODALITY: {concept.assessment_modality.value}")

@@ -3,37 +3,50 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "capillary-actions-sdk"
-version = "0.2.0"
-description = "SDK for building extensions to the Capillary Actions platform"
+name = "the-primer"
+version = "0.1.0"
+description = "YAML-driven AI tutoring engine — a reference implementation built on the Capillary Actions SDK"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.13,<4.0"
 authors = [
-    { name = "Capillary Actions SDK Contributors" },
+    { name = "the-primer contributors" },
 ]
-keywords = ["sdk", "ai", "agents", "workflows", "ag-ui"]
+keywords = ["tutoring", "education", "ai", "agents", "bloom", "capillary-actions-sdk"]
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.13",
     "Typing :: Typed",
 ]
 dependencies = [
+    # Core contract this engine is built on. the-primer extends the SDK's
+    # learner-interaction domain; the dependency is one-way (the-primer -> SDK).
+    "capillary-actions-sdk",
     "pydantic>=2.0.0",
     "pyyaml>=6.0.3",
+    # Demo runtime (main.py) — talks to an OpenAI-compatible endpoint.
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/Allogy/capillary-actions-sdk"
-Repository = "https://github.com/Allogy/capillary-actions-sdk"
+Homepage = "https://github.com/Allogy/the-primer"
+Repository = "https://github.com/Allogy/the-primer"
+"SDK (dependency)" = "https://github.com/Allogy/capillary-actions-sdk"
+
+# The SDK is not published to a package index; resolve it straight from its repo.
+# For local development against a sibling checkout, override with:
+#   [tool.uv.sources] capillary-actions-sdk = { path = "../capillary-actions-sdk", editable = true }
+[tool.uv.sources]
+capillary-actions-sdk = { git = "ssh://git@github.com/Allogy/capillary-actions-sdk.git", branch = "main" }
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/capillary_actions_sdk"]
+packages = ["src/the_primer"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/capillary_actions_sdk"]
+include = ["src/the_primer"]
 
 [tool.ruff]
 line-length = 100

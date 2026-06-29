@@ -1,4 +1,4 @@
-# Capillary Actions Learning Engine (YAML-Driven Tutoring System)
+# the-primer — Capillary Actions Learning Engine (YAML-Driven Tutoring System)
 
 This project implements a configurable AI tutoring system on top of the existing [Capillary Actions SDK](https://github.com/Allogy/capillary-actions-sdk). It uses the following:
 
@@ -11,6 +11,19 @@ The goal is to create a **portable curriculum execution engine** where the knowl
 **Status:** Development (0.1.0)
 
 **Requires:** Python >= 3.13, Pydantic >= 2.0
+
+## Relationship to the SDK
+
+`the-primer` is a **downstream consumer** of [`capillary-actions-sdk`](https://github.com/Allogy/capillary-actions-sdk), not a copy of it. The dependency is strictly one-way:
+
+```
+the_primer  ──depends on──▶  capillary_actions_sdk
+```
+
+- The **SDK** provides the domain-agnostic contracts: base learner-interaction models (`KnowledgeConcept`, `KnowledgeGraph`, `LearnerProgress`), ports, and AG-UI events.
+- **the-primer** (this repo, package `the_primer`) provides the opinionated pedagogy: it *subclasses* the SDK models in `src/the_primer/models.py` to add Bloom levels, assessment modalities, mastery records, and gating — plus the engine (`loader`, `tutor`, `session_runner`).
+
+The SDK never imports from `the_primer`. The SDK is declared as a dependency in `pyproject.toml` (resolved from its Git repo via `[tool.uv.sources]`); install with `uv sync`. For local work against a sibling SDK checkout, point the source at a path instead (see the comment in `pyproject.toml`).
 
 ## Architecture
 
@@ -83,11 +96,11 @@ The purpose is to control assessment framing and enables switching between recal
 
 ### ENGINE COMPONENTS
 
-1. Loader (`src/capillary_actions_sdk/loader.py`)
+1. Loader (`src/the_primer/loader.py`)
 
 Loads YAML into typed Python objects such as `KnowledgeGraph`, `KnowledgeConcept`, Bloom policy and Modality policy. The responsibility is converting the declarative config into runtime objects.
 
-2. TutoringAgent (`src/capillary_actions_sdk/tutor.py`)
+2. TutoringAgent (`src/the_primer/tutor.py`)
 
 Handles LLM interactions.
 
@@ -99,7 +112,7 @@ Handles LLM interactions.
 
 The key idea is that all pedagogy is injected from YAML policies, so there is no hardcoded teaching logic.
 
-3. MasteryGate (`src/capillary_actions_sdk/tutor.py`)
+3. MasteryGate (`src/the_primer/tutor.py`)
 
 Determines progression:
 
@@ -109,7 +122,7 @@ Determines progression:
 
 The purpose is to change raw scores into learning decisions.
 
-4. SessionRunner (`src/capillary_actions_sdk/session_runner.py`)
+4. SessionRunner (`src/the_primer/session_runner.py`)
 
 Orchestrates the full learning flow of
 

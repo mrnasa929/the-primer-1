@@ -2,19 +2,22 @@ from uuid import UUID
 
 import yaml
 
-from capillary_actions_sdk.models.enums import AssessmentModality, BloomLevel
-from capillary_actions_sdk.models.learner_interaction import KnowledgeConcept, KnowledgeGraph
+from the_primer.enums import AssessmentModality, BloomLevel
+from the_primer.models import KnowledgeConcept, KnowledgeGraph
 
 
 def load_yaml(path: str) -> dict:
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
+
 def load_bloom_policy(path: str) -> dict:
     return load_yaml(path)["bloom_levels"]
 
+
 def load_modality_policy(path: str) -> dict:
     return load_yaml(path)["assessment_modalities"]
+
 
 def load_kg(path: str) -> KnowledgeGraph:
     data = load_yaml(path)
