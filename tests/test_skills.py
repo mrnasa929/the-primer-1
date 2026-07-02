@@ -1,4 +1,4 @@
-"""Tests for primer_cores.skills.SkillRegistry"""
+"""Tests for primer_cores.skills.SkillRegistry."""
 
 from __future__ import annotations
 
@@ -37,6 +37,29 @@ def tutor_wdf(tmp_path: Path) -> Path:
 
 
 class TestSkillRegistry:
+    def test_real_tutor_concept_is_valid(self) -> None:
+        repository_root = Path(__file__).resolve().parents[1]
+        wdf_path = (
+            repository_root
+            / "src"
+            / "primer_core"
+            / "wdfs"
+            / "tutor-concept.yaml"
+        )
+
+        assert wdf_path.is_file()
+
+        registry = SkillRegistry()
+        registry.register("tutor-concept", str(wdf_path))
+
+        document = registry.load_wdf("tutor-concept")
+
+        assert {"name", "entry", "exit", "nodes"} <= document.keys()
+        assert document["name"] == "tutor-concept"
+        assert isinstance(document["nodes"], dict)
+        assert document["entry"] in document["nodes"]
+        assert document["exit"] in document["nodes"]
+
     def test_register_and_get_returns_wdf_path(self, tutor_wdf: Path) -> None:
         registry = SkillRegistry()
 
