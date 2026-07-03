@@ -39,13 +39,7 @@ def tutor_wdf(tmp_path: Path) -> Path:
 class TestSkillRegistry:
     def test_real_tutor_concept_is_valid(self) -> None:
         repository_root = Path(__file__).resolve().parents[1]
-        wdf_path = (
-            repository_root
-            / "src"
-            / "primer_core"
-            / "wdfs"
-            / "tutor-concept.yaml"
-        )
+        wdf_path = repository_root / "src" / "primer_core" / "wdfs" / "tutor-concept.yaml"
 
         assert wdf_path.is_file()
 

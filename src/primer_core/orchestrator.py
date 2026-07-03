@@ -33,7 +33,7 @@ class EngagementOrchestrator:
         self.runner = runner
         self.memory = memory
         self.skills = skills
-    
+
     async def run_engagement(
         self,
         skill_name: str,
