@@ -40,7 +40,8 @@ class MemoryCore:
 
         Raises:
             ValueError: if the entry's dimension is not declared in the schema.
-            ValueError: if the entry's content is not listed in the fields of that entry's dimension.
+            ValueError: if the entry's content is not listed in the fields
+                of that entry's dimension.
         """
         validate_memory_entry(entry=entry, schema=self.schema)
         _validate_content_fields(entry=entry, schema=self.schema)
@@ -60,7 +61,8 @@ class MemoryCore:
 
         Raises:
             ValueError: if the entry's dimension is not declared in the schema.
-            ValueError: if the entry's content is not listed in the fields of that entry's dimension.
+            ValueError: if the entry's content is not listed in the fields
+                of that entry's dimension.
         """
         entry = MemoryEntry(
             id=uuid4(),
@@ -78,7 +80,8 @@ class MemoryCore:
             subject_id (UUID): The unique uuid4 assigned to the subject of interest.
 
         Returns:
-            A WorkingMemoryAssembly object, with learner_id=subject_id and entries is a list of entries written to the subject.
+            A WorkingMemoryAssembly object, with learner_id=subject_id
+                and entries is a list of entries written to the subject.
         """
         entries = await self.store.get(subject_id=subject_id)
         return WorkingMemoryAssembly(learner_id=subject_id, entries=entries)
