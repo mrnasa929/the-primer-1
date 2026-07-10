@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from uuid import UUID
 
 from capillary_actions_sdk.models.student_model import MemoryEntry
@@ -6,7 +7,7 @@ from capillary_actions_sdk.ports.memory import MemoryStorePort
 
 
 class FileMemoryStore(MemoryStorePort):
-    def __init__(self, path: str = "mem.json"):
+    def __init__(self, path: str | Path):
         self.path = path
 
         try:
@@ -15,7 +16,7 @@ class FileMemoryStore(MemoryStorePort):
         except FileNotFoundError:
             self._store = dict()
             with open(self.path, "w") as json_file:
-                self._store = json.dump(self._store, json_file)
+                json.dump(self._store, json_file)
 
     async def store(self, subject_id: UUID, entry: MemoryEntry) -> None:
         if str(subject_id) in self._store.keys():
@@ -30,7 +31,6 @@ class FileMemoryStore(MemoryStorePort):
         self, subject_id: UUID, dimension: str | None = None, tier: str | None = None
     ) -> list[MemoryEntry]:
         if str(subject_id) not in self._store.keys():
-            print(f"LOOK HERE: {list(self._store.keys())}")
             return []
 
         entries = []
