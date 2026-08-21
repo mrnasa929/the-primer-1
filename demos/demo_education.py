@@ -1,12 +1,3 @@
-"""
-demos/demo_education.py — the memory path end-to-end: run an education engagement,
-write the outcome back through MemoryCore.ingest → FileMemoryStore, start a “second
-session” over the same store path, and print that assemble_working_memory surfaces
-the first session's outcome (your LD-W4 proof, now as a narrated demo). Follow the
-pattern KG-W8 established: repo-root demos/, deterministic fakes only, exit 0 on
-success / non-zero on failure, one subprocess pytest with a timeout=.
-"""
-
 from __future__ import annotations
 
 import asyncio
@@ -16,6 +7,7 @@ from pathlib import Path
 
 from capillary_actions_sdk.models.student_model import MemoryEntry
 from capillary_actions_sdk.schema.domain_schema import DomainSchema
+from capillary_actions_sdk.ports.platform import RunWorkflowResponse
 
 from primer_core.adapters.capillary.file_memory_store import FileMemoryStore
 from primer_core.domains import DomainPack, load_domain_pack
@@ -32,6 +24,10 @@ from primer_core.testing.fakes import FakeRunWorkflowPort
 async def run_demo() -> int:
     domain = "education"
     FILE_PATH = Path(__file__).parent / "demo_memories" / "demo_memory.json"
+
+    # Clear demo_memory.json for the run
+    with open(FILE_PATH, "w") as temp_file:
+        json.dump({}, temp_file)
 
     # Session 1
     case: EngagementEvalCase = find_eval_case(domain)
@@ -56,7 +52,7 @@ async def run_demo() -> int:
     schema: DomainSchema = pack.schema
     skills: SkillRegistry = pack.skills
 
-    second_response: FakeRunWorkflowPort = deepcopy(case.orchestrator.runner.response)
+    second_response: RunWorkflowResponse = deepcopy(case.orchestrator.runner.response)
 
     second_memory = MemoryCore(schema=schema, store=FileMemoryStore(path=FILE_PATH))
     second_orchestrator = EngagementOrchestrator(
@@ -72,10 +68,6 @@ async def run_demo() -> int:
     session_2_working_memory_entries: list[MemoryEntry] = (
         await second_orchestrator.memory.assemble_working_memory(subject_id=case.subject_id)
     ).entries
-
-    # Clear demo_memory.json for the next run
-    with open(FILE_PATH, "w") as temp_file:
-        json.dump({}, temp_file)
 
     print(f"""
 Session 1 outcome (MemoryCore.ingest -> FileMemoryStore(path={FILE_PATH}))
@@ -116,6 +108,9 @@ Session 2 working memory (same FileMemoryStore path at {FILE_PATH})
                 f"\n{'=' * 110}"
             )
         )
+        return 1
+    else:
+        print(f"Something else went wrong.")
         return 1
 
 
